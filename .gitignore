@@ -1,1 +1,4 @@
 *.pyc
+build/*
+dist/*
+src/GlusterFS_Tools.egg-info/*

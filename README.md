@@ -1,24 +1,29 @@
 glusterfs-tools
 ===============
 
-A wrapper around glusterfs cli to view/filter volume information. 
+Collection of CLI tools to view/filter Gluster volumes information.
 
-Create a shellscript in /usr/local/bin directory(make sure /usr/local/bin is in your PATH)
+## Installation
 
-File name: /usr/local/bin/gfvolumes
+    git clone git@github.com:aravindavk/glusterfs-tools.git
+    cd glusterfs-tools
+    sudo python setup.py install
 
-    #!/bin/bash
-    python <path to gftools>/volumes.py "$@"
-    
-In my system
+## License
 
-    #!/bin/bash
-    python /home/aravinda/sandbox/glusterfs-tools/gftools/volumes.py "$@"
-    
-Make gfvolumes executable
+BSD, see LICENSE for more details.
 
-    chmod +x /usr/local/bin/gfvolumes
-    
-Now we can run gfvolumes to get the list of gluster volumes available. 
+## Usage
 
-Check my [blog](http://aravindavk.in/blog/glusterfs-tools) for more details. 
+As of today two tools available, 
+
+1. glustervolumes: view/filter gluster volume information
+2. glusterdf: Show information about the GlusterFS volumes
+
+`sudo glustervolumes --help` and `sudo glusterdf --help` for more details.
+
+
+## Blogs
+
+1. [http://aravindavk.in/blog/glusterfs-tools](http://aravindavk.in/blog/glusterfs-tools)
+2. [http://aravindavk.in/blog/glusterdf](http://aravindavk.in/blog/glusterdf)
