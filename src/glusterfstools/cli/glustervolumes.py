@@ -10,17 +10,11 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import json
 import sys
 
-from glusterfstools import volumes
+from glusterfstools import volumes, utils
 
 PROG_DESCRIPTION = """
 GlusterFS Volumes summary
 """
-
-
-class COLORS:
-    RED = "\033[31m"
-    GREEN = "\033[32m"
-    NOCOLOR = "\033[0m"
 
 
 class ColumnFormat:
@@ -33,12 +27,6 @@ class ColumnFormat:
     REPLICA = '%7s'
     DISTRIBUTE = '%10s'
     STRIPE = '%6s'
-
-
-def _color_txt(txt, color):
-    return "%s%s%s" % (getattr(COLORS, color, COLORS.NOCOLOR),
-                       txt,
-                       COLORS.NOCOLOR)
 
 
 def _print_header(args):
@@ -63,7 +51,7 @@ def _print_vol_row(vol, args):
     color = "GREEN" if vol['status'] == "UP" else "RED"
     op = [ColumnFormat.UUID % vol['uuid'],
           ColumnFormat.NAME % vol['name'],
-          _color_txt(ColumnFormat.STATUS % vol['status'], color),
+          utils.color_txt(ColumnFormat.STATUS % vol['status'], color),
           ColumnFormat.TYPE % vol['type'],
           ColumnFormat.NUM_BRICKS % vol['num_bricks']]
 
@@ -99,10 +87,13 @@ def _get_args():
     parser.add_argument('--status', help="Status to filter", type=str,
                         default='')
     parser.add_argument('--json', help="JSON Output", action='store_true')
-    parser.add_argument('--name', help="Name to filter", type=str, default='')
-    parser.add_argument('--type', help="Type to filter", type=str, default='')
-    parser.add_argument('--volumewithbricks', type=str, default='',
-                        help="Show GlusterFS volumes with these bricks")
+    parser.add_argument('--name', help="Name to filter(Regex supported)",
+                        type=str, default='')
+    parser.add_argument('--type', help="Type to filter(Regex supported)",
+                        type=str, default='')
+    parser.add_argument('--volumewithbrick', type=str, default='',
+                        help="Show GlusterFS volumes with this brick \
+                        (Regex supported)")
     parser.add_argument('--show-detail', action='store_true',
                         help="Show Replica/distribute/stripe count")
     parser.add_argument('--show-bricks', help="Show bricks",
@@ -120,14 +111,15 @@ def main():
         "name": args.name,
         "status": args.status,
         "type": args.type,
-        "volumewithbricks": args.volumewithbricks
+        "volumewithbrick": args.volumewithbrick
     }
 
     try:
         gfvols = volumes.search(filters)
     except volumes.GlusterVolumeInfoFailed:
-        sys.stderr.write(_color_txt('Error fetching gluster volumes details\n',
-                                    'RED'))
+        msg = 'Error fetching gluster volumes details\n'
+        sys.stderr.write(utils.color_txt(msg,
+                                         'RED'))
         exit(1)
 
     if args.json:

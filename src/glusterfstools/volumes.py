@@ -141,3 +141,7 @@ def search(filters={}):
     data = _xml_exec(INFO_CMD)
     vols = _parse_vol_info(data)
     return _apply_filters(vols, filters)
+
+
+def filters():
+    return _volume_filters.keys()

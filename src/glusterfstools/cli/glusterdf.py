@@ -11,7 +11,7 @@ import json
 import re
 import sys
 
-from glusterfstools import volumes, gfapi
+from glusterfstools import volumes, gfapi, utils
 
 
 PROG_DESCRIPTION = """
@@ -29,7 +29,9 @@ FIELDS = {
     "used": {"title": "Used", "format": "%20s"},
     "avail": {"title": "Avail", "format": "%20s"},
     "pcent": {"title": "Use%", "format": "%10s"},
-    "status": {"title": "Status", "format": "%10s"}
+    "status": {"title": "Status", "format": "%10s"},
+    "type": {"title": "Type", "format": "%20s"},
+    "num_bricks": {"title": "Bricks", "format": "%10s"}
 }
 
 
@@ -54,7 +56,14 @@ def _format_output(data, args, header=False):
     for f in fields:
         f = f.strip()
         value = FIELDS[f]["title"] if header else data[f]
-        sys.stdout.write(FIELDS[f]["format"] % value)
+
+        if not header and f == "status":
+            color = "GREEN" if value == "UP" else "RED"
+            value = utils.color_txt(FIELDS[f]["format"] % value, color)
+        else:
+            value = FIELDS[f]["format"] % value
+
+        sys.stdout.write(value)
         sys.stdout.write(" ")
 
     sys.stdout.write("\n")
@@ -67,6 +76,8 @@ def _statvfs_data(vol):
     data = {
         "volume": vol["name"],
         "status": vol["status"],
+        "type": vol["type"],
+        "num_bricks": vol["num_bricks"],
         "size": ((statvfs_data.f_blocks -
                   (statvfs_data.f_bfree - statvfs_data.f_bavail)) *
                  statvfs_data.f_bsize),
@@ -77,9 +88,15 @@ def _statvfs_data(vol):
     }
 
     data["used"] = data["size"] - data["avail"]
-    data["pcent"] = data["used"] * 100 / data["size"]
     data["iused"] = data["itotal"] - data["iavail"]
-    data["ipcent"] = data["iused"] * 100 / data["itotal"]
+    data["pcent"] = 0
+    data["ipcent"] = 0
+
+    if data["size"] > 0:
+        data["pcent"] = data["used"] * 100 / data["size"]
+
+    if data["itotal"] > 0:
+        data["ipcent"] = data["iused"] * 100 / data["itotal"]
 
     data['pcent'] = "%s%%" % data['pcent']
     data['ipcent'] = "%s%%" % data['ipcent']
@@ -96,6 +113,8 @@ def _display(gvols, args):
         data = {
             "volume": vol["name"],
             "status": vol["status"],
+            "type": vol["type"],
+            "num_bricks": vol["num_bricks"],
             "size": "-",
             "avail": "-",
             "itotal": "-",
@@ -133,15 +152,16 @@ def _get_args():
                         E.g., '-BM' prints sizes in units of 1,048,576 bytes. \
                         See SIZE format below.",
                         type=str, default='')
-    parser.add_argument('-k', help="like --block-size=1K", action='store_true')
+    parser.add_argument('-k', help="like --block-size=1K",
+                        action='store_true', dest="onek")
     parser.add_argument('-h', '--human-readable', action='store_true',
                         help="print sizes in human readable format \
                         (e.g., 1K 2M 2G)")
     parser.add_argument('-H', '--si', action='store_true',
                         dest='human_readable_1000',
                         help="likewise, but use powers of 1000 not 1024")
-    parser.add_argument('--total',
-                        help="produce a grand total", action='store_true')
+    # parser.add_argument('--total',
+    #                     help="produce a grand total", action='store_true')
     parser.add_argument('-i', '--inodes', action='store_true',
                         help="list inode information instead of block usage")
     parser.add_argument("--help", action="help",
@@ -149,16 +169,20 @@ def _get_args():
     parser.add_argument('--status', help="Status to filter",
                         type=str, default='')
     parser.add_argument('--json', help="JSON Output", action='store_true')
-    parser.add_argument('--name', help="Name to filter", type=str, default='')
-    parser.add_argument('--type', help="Type to filter", type=str, default='')
-    parser.add_argument('--volumewithbricks', type=str, default='',
-                        help="Show GlusterFS volumes with these bricks")
+    parser.add_argument('--name', help="Name to filter(Regex supported)",
+                        type=str, default='')
+    parser.add_argument('--type', help="Type to filter(Regex supported)",
+                        type=str, default='')
+    parser.add_argument('--volumewithbrick', type=str, default='',
+                        help="Show GlusterFS volumes with this brick \
+                        (Regex supported)")
 
     # Derived values
     parser.add_argument('--block-size-number', help=SUPPRESS, default=1)
     parser.add_argument('--hr-block-size', help=SUPPRESS, default=1024)
     parser.add_argument('--fields', help=SUPPRESS,
-                        default="volume,size,used,avail,pcent,status")
+                        default="volume,type,num_bricks,status,size,used,\
+                        avail,pcent")
 
     return parser.parse_args()
 
@@ -187,15 +211,19 @@ def main():
         "name": args.name,
         "status": args.status,
         "type": args.type,
-        "volumewithbricks": args.volumewithbricks
+        "volumewithbrick": args.volumewithbrick
     }
 
     try:
         gvols = volumes.search(filters)
     except volumes.GlusterVolumeInfoFailed:
-        sys.stderr.write(_color_txt('Error fetching gluster volumes details\n',
-                                    'RED'))
+        msg = 'Error fetching gluster volumes details\n'
+        sys.stderr.write(utils.color_txt(msg,
+                                         'RED'))
         exit(1)
+
+    if args.onek:
+        args.block_size = 'K'
 
     if args.block_size != '':
         args.human_readable = False
@@ -205,7 +233,8 @@ def main():
     args.block_size_number = _get_block_size(args)
 
     if args.inodes:
-        args.fields = "volume,itotal,iused,iavail,ipcent,status"
+        args.fields = "volume,type,num_bricks,status,itotal,\
+        iused,iavail,ipcent"
 
     _display(gvols, args)
 

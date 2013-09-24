@@ -9,6 +9,12 @@
 import subprocess
 
 
+class COLORS:
+    RED = "\033[31m"
+    GREEN = "\033[32m"
+    NOCOLOR = "\033[0m"
+
+
 def exec_cmd(cmd, env=None):
     p = subprocess.Popen(cmd,
                          stdin=subprocess.PIPE,
@@ -19,3 +25,9 @@ def exec_cmd(cmd, env=None):
 
     (out, err) = p.communicate()
     return (p.returncode, out, err)
+
+
+def color_txt(txt, color):
+    return "%s%s%s" % (getattr(COLORS, color, COLORS.NOCOLOR),
+                       txt,
+                       COLORS.NOCOLOR)

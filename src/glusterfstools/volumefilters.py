@@ -62,8 +62,8 @@ def type_filter(vols, value):
     return [v for v in vols if is_match(v, value)]
 
 
-@filter("volumewithbricks")
-def volumewithbricks_filter(vols, value):
+@filter("volumewithbrick")
+def volumewithbrick_filter(vols, value):
     def is_match(vol, value):
         for brick in vol["bricks"]:
             if value in ['', 'all'] or \

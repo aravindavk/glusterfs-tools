@@ -10,7 +10,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "GlusterFS Tools",
-    version = "0.1",
+    version = "0.2",
     package_dir = {"": "src"},
     packages = ["glusterfstools", "glusterfstools.cli"],
     include_package_data = True,
