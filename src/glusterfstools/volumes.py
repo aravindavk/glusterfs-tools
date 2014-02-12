@@ -68,7 +68,7 @@ def _parse_a_vol(volume_el):
         value['bricks'].append(b.text)
 
     for o in volume_el.findall('options/option'):
-        value['options'].append({"name": [o.find('name').text],
+        value['options'].append({"name": o.find('name').text,
                                  "value": o.find('value').text})
 
     return value

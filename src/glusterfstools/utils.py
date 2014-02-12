@@ -15,13 +15,14 @@ class COLORS:
     NOCOLOR = "\033[0m"
 
 
-def exec_cmd(cmd, env=None):
+def exec_cmd(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+             stderr=subprocess.PIPE, env=None, close_fds=True):
     p = subprocess.Popen(cmd,
-                         stdin=subprocess.PIPE,
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE,
+                         stdin=stdin,
+                         stdout=stdout,
+                         stderr=stderr,
                          env=env,
-                         close_fds=True)
+                         close_fds=close_fds)
 
     (out, err) = p.communicate()
     return (p.returncode, out, err)

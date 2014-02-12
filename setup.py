@@ -20,6 +20,7 @@ setup(
         "console_scripts": [
             "glusterdf = glusterfstools.cli.glusterdf:main",
             "glustervolumes = glusterfstools.cli.glustervolumes:main",
+            "glusteroptions = glusterfstools.cli.glusteroptions:main",
         ]
     },
     platforms = "linux",
