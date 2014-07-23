@@ -2,6 +2,6 @@
 """
     glusterfstools.cli
 
-    :copyright: (c) 2013 by Aravinda VK
+    :copyright: (c) 2013, 2014 by Aravinda VK
     :license: BSD, see LICENSE for more details.
 """

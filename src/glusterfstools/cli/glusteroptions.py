@@ -1,8 +1,8 @@
 #!/usr/bin/python
-import subprocess
 from glusterfstools import volumes, utils
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 import sys
+import textwrap
 
 PROG_DESCRIPTION= """
 
@@ -60,9 +60,18 @@ def main():
         opts.update(volume_opts_dict)
 
 
+
     for k, v in opts.items():
         if args.show_desc:
-            sys.stdout.write("%40s %10s %s\n" % (k, v['value'], v["desc"]))
+            desc_wrapped = textwrap.fill(v['desc'], width=50)
+            desc = ""
+            for i, d in enumerate(desc_wrapped.split("\n")):
+                if i == 0:
+                    desc += "%50s\n" % "{0:50}".format(d)
+                else:
+                    desc += "%102s\n" % "{0:50}".format(d)
+                
+            sys.stdout.write("%40s %10s %s\n" % (k, v['value'], desc))
         else:
             sys.stdout.write("%40s %s\n" % (k, v["value"]))
 

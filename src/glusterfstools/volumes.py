@@ -2,11 +2,10 @@
 """
     glusterfstools.volumes
 
-    :copyright: (c) 2013 by Aravinda VK
+    :copyright: (c) 2013, 2014 by Aravinda VK
     :license: BSD, see LICENSE for more details.
 """
 
-import re
 import xml.etree.cElementTree as etree
 
 from utils import exec_cmd
