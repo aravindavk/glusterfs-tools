@@ -11,7 +11,9 @@ import json
 import re
 import sys
 
-from glusterfstools import volumes, gfapi, utils
+from glusterfstools import volumes, utils
+from gluster.gfapi import Volume
+from gluster.cli import volume
 
 
 PROG_DESCRIPTION = """
@@ -58,7 +60,7 @@ def _format_output(data, args, header=False):
         value = FIELDS[f]["title"] if header else data[f]
 
         if not header and f == "status":
-            color = "GREEN" if value == "UP" else "RED"
+            color = "GREEN" if value == "Started" else "RED"
             value = utils.color_txt(FIELDS[f]["format"] % value, color)
         else:
             value = FIELDS[f]["format"] % value
@@ -70,8 +72,10 @@ def _format_output(data, args, header=False):
 
 
 def _statvfs_data(vol):
-    statvfs_data = gfapi.statvfs(vol["name"],
-                                 protocal=vol["transport"].lower())
+    gvol = Volume("localhost", vol["name"])
+    gvol.mount()
+    statvfs_data = gvol.statvfs("/")
+    gvol.umount()
 
     data = {
         "volume": vol["name"],
@@ -125,11 +129,11 @@ def _display(gvols, args):
             "ipcent": "-"
         }
 
-        if vol["status"] == "UP":
+        if vol["status"] == "Started":
             data = _statvfs_data(vol)
 
         for f in HUMAN_READABLE_REQUIRED_FIELDS:
-            if data["status"] == "UP":
+            if data["status"] == "Started":
                 data[f] = _format_bytes(data[f], args)
 
         if args.json:
@@ -166,17 +170,9 @@ def _get_args():
                         help="list inode information instead of block usage")
     parser.add_argument("--help", action="help",
                         help="show this help message and exit")
-    parser.add_argument('--status', help="Status to filter",
-                        type=str, default='')
     parser.add_argument('--json', help="JSON Output", action='store_true')
-    parser.add_argument('--name', help="Name to filter(Regex supported)",
-                        type=str, default='')
-    parser.add_argument('--type', help="Type to filter(Regex supported)",
-                        type=str, default='')
-    parser.add_argument('--volumewithbrick', type=str, default='',
-                        help="Show GlusterFS volumes with this brick \
-                        (Regex supported)")
-
+    parser.add_argument('name', help="Volume Name",
+                        type=str, nargs="?")
     # Derived values
     parser.add_argument('--block-size-number', help=SUPPRESS, default=1)
     parser.add_argument('--hr-block-size', help=SUPPRESS, default=1024)
@@ -207,15 +203,8 @@ def _get_block_size(args):
 def main():
     args = _get_args()
 
-    filters = {
-        "name": args.name,
-        "status": args.status,
-        "type": args.type,
-        "volumewithbrick": args.volumewithbrick
-    }
-
     try:
-        gvols = volumes.search(filters)
+        gvols = volume.info(args.name)
     except volumes.GlusterVolumeInfoFailed:
         msg = 'Error fetching gluster volumes details\n'
         sys.stderr.write(utils.color_txt(msg,

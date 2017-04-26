@@ -8,4 +8,3 @@
 __VERSION__ = '0.3'
 
 import volumes
-import gfapi

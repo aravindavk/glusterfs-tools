@@ -48,7 +48,7 @@ def _print_header(args):
 
 
 def _print_vol_row(vol, args):
-    color = "GREEN" if vol['status'] == "UP" else "RED"
+    color = "GREEN" if vol['status'] == "Started" else "RED"
     op = [ColumnFormat.UUID % vol['uuid'],
           ColumnFormat.NAME % vol['name'],
           utils.color_txt(ColumnFormat.STATUS % vol['status'], color),
