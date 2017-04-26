@@ -17,11 +17,10 @@ BSD, see LICENSE for more details.
 
 As of today two tools available, 
 
-1. glustervolumes: view/filter gluster volume information
-2. glusterdf: Show information about the GlusterFS volumes
-3. georepcheckpoint: GlusterFS georeplication checkpoint tool
+1. gluster-volumes: view/filter gluster volume information
+2. gluster-df: Show information about the GlusterFS volumes
 
-`sudo glustervolumes --help`, `sudo glusterdf --help` and `georepcheckpoint --help`for more details.
+`sudo gluster-volumes --help` and `sudo gluster-df --help` for more details.
 
 
 ## Blogs
@@ -29,11 +28,3 @@ As of today two tools available,
 1. [http://aravindavk.in/blog/glusterfs-tools](http://aravindavk.in/blog/glusterfs-tools)
 2. [http://aravindavk.in/blog/glusterdf](http://aravindavk.in/blog/glusterdf)
 3. [http://aravindavk.in/blog/georepcheckpoint](http://aravindavk.in/blog/georepcheckpoint)
-
-
-
-glustervolumes
-glusterdf
-glusterclparser
-glusterdebughelper
-glustergeostatus
